@@ -60,24 +60,19 @@ function drawScene0(data) {
     .range([d3.symbolSquare, d3.symbolTriangle]);
 
   g.append("g")
-    // .attr("class", "grid x-grid") // Add a class for styling
+    .attr("class", "grid x-grid")
     .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x)
-      .tickSize(-height)
-    )
-    .selectAll("line") // Select all line elements within this group
-    .attr("stroke", "lightgray")
-    .attr("stroke-width", 0.5)
-    .attr("opacity", 0.9);
+    .call(
+      d3.axisBottom(x)
+        .tickSize(-height)
+    );
     
   g.append("g")
-    .call(d3.axisLeft(y)
-      .tickSize(-width)
-    )
-    .selectAll("line") // Select all line elements within this group
-    .attr("stroke", "lightgray")
-    .attr("stroke-width", 0.5)
-    .attr("opacity", 0.9);
+    .attr("class", "grid y-grid")
+    .call(
+      d3.axisLeft(y)
+        .tickSize(-width)
+    );
 
   g.selectAll("path.point")
     .data(filtered)
@@ -110,13 +105,30 @@ function drawScene1(data) {
   const filtered = data.filter(d => d.occupation_title === occupation);
 
   const years = d3.extent(filtered, d => d.year);
+
+  const marginPercentage = 0.1;
+  const yMin = d3.min(filtered, d => d.annual_percentile_10);
   const yMax = d3.max(filtered, d => d.annual_percentile_90);
+  const yAdjustedMin = yMin * (1 - marginPercentage);
+  const yAdjustedMax = yMax * (1 + marginPercentage);
 
   const x = d3.scaleLinear().domain(years).range([0, width]);
-  const y = d3.scaleLinear().domain([0, yMax]).range([height, 0]);
+  const y = d3.scaleLog().domain([yAdjustedMin, yAdjustedMax]).range([height, 0]);
 
-  g.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x).tickFormat(d3.format("d")));
-  g.append("g").call(d3.axisLeft(y));
+  g.append("g")
+    .attr("class", "grid x-grid")
+    .attr("transform", `translate(0,${height})`)
+    .call(
+      d3.axisBottom(x)
+        .tickSize(-height)
+        .tickFormat(d3.format("d"))
+    );
+  g.append("g")
+    .attr("class", "grid y-grid")
+    .call(
+      d3.axisLeft(y)
+        .tickSize(-width)
+    );
 
   const percentiles = [
     {key: 'annual_percentile_10', color: '#91bfdb'},
