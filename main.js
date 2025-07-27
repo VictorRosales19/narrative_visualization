@@ -33,6 +33,7 @@ function drawScene0(data) {
   d3.select("#filters").style("display", "none"); // avoid show filters
 
   const svg = d3.select("#vis");
+  svg.attr("height",600);
   const margin = {top: 60, right: 40, bottom: 60, left: 80};
   const width = +svg.attr("width") - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
@@ -130,7 +131,8 @@ function drawScene0(data) {
     .attr("x", svg.attr("width") / 2)
     .attr("y", 30)
     .attr("text-anchor", "middle")
-    .style("font-size", "22px")
+    .style("font-size", "25px")
+    .style("font-weight", "bold")
     .text(`Occupation Overview - ${year}`);
 
   // Legend
@@ -166,6 +168,7 @@ function drawScene1(data) {
   d3.select("#filters").style("display", "none"); // avoid show filters
 
   const svg = d3.select("#vis");
+  svg.attr("height",600);
   const margin = {top: 60, right: 40, bottom: 60, left: 80};
   const width = +svg.attr("width") - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
@@ -184,15 +187,18 @@ function drawScene1(data) {
   const occupation = "Management Occupations";
   const filtered = data.filter(d => d.occupation_title === occupation);
 
+  const paddingDays = 30; 
   const years = d3.extent(filtered, d => d.date);
+  const paddedMinDate = d3.timeDay.offset(years[0], -paddingDays);
+  const paddedMaxDate = d3.timeDay.offset(years[1], paddingDays);
 
-  const marginPercentage = 0.1;
+  const marginPercentage = 0.2;
   const yMin = d3.min(filtered, d => d.annual_percentile_10);
   const yMax = d3.max(filtered, d => d.annual_percentile_90);
-  const yAdjustedMin = yMin * (1 - marginPercentage);
-  const yAdjustedMax = yMax * (1 + marginPercentage);
+  const yAdjustedMin = yMin * (1 - marginPercentage*2);
+  const yAdjustedMax = yMax * (1 + marginPercentage*2);
 
-  const x = d3.scaleTime().domain(years).range([0, width]);
+  const x = d3.scaleTime().domain([paddedMinDate, paddedMaxDate]).range([0, width]);
   const y = d3.scaleLog().domain([yAdjustedMin, yAdjustedMax]).range([height, 0]);
 
   g.append("g")
@@ -236,7 +242,7 @@ function drawScene1(data) {
       .attr("class", `dot-${p.key}`)
       .attr("cx", d => x(d.date))
       .attr("cy", d => y(d[p.key]))
-      .attr("r", 4)
+      .attr("r", 8)
       .attr("fill", p.color)
       .on("mouseover", (event, d) => {
         tooltip
@@ -279,16 +285,20 @@ function drawScene1(data) {
     .attr("x", svg.attr("width") / 2)
     .attr("y", 40)
     .attr("text-anchor", "middle")
-    .style("font-size", "22px")
+    .style("font-size", "25px")
+    .style("font-weight", "bold")
     .text(`Income Over Time — ${occupation}`);
 }
 
 function drawScene2(data) {
   const svg = d3.select("#vis");
+  svg.attr("height",1000);
+
   const margin = { top: 80, right: 100, bottom: 80, left: 100 };
   const width = +svg.attr("width") - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
-  const plotHeight = height / 2 - 40; // half the SVG height
+  const plotHeight1 =  5*((height / 9));
+  const plotHeight2 = height - plotHeight1 - height/8;
 
   d3.select("#filters").style("display", "block");
 
@@ -356,7 +366,7 @@ function drawScene2(data) {
     svg.selectAll("*").remove();
 
     const g1 = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-    const g2 = svg.append("g").attr("transform", `translate(${margin.left},${margin.top + plotHeight + 60})`);
+    const g2 = svg.append("g").attr("transform", `translate(${margin.left},${margin.top + plotHeight1 + 130})`);
 
     let scatterData = data.filter(d =>
       d.annual_mean > 0 && d.total_employment > 0
@@ -384,7 +394,7 @@ function drawScene2(data) {
     const y1AdjustedMin = y1Extent[0] * (1 - marginPercentage*2);
     const y1AdjustedMax = y1Extent[1] * (1 + marginPercentage*2);
 
-    const y1 = d3.scaleLog().domain([y1AdjustedMin, y1AdjustedMax]).range([plotHeight, 0]);
+    const y1 = d3.scaleLog().domain([y1AdjustedMin, y1AdjustedMax]).range([plotHeight1, 0]);
 
     const yearExtent = d3.extent(data, d => d.year);
     const color = d3.scaleLinear()
@@ -397,10 +407,10 @@ function drawScene2(data) {
     
     g1.append("g")
       .attr("class", "grid x-grid")
-      .attr("transform", `translate(0,${plotHeight})`)
+      .attr("transform", `translate(0,${plotHeight1})`)
       .call(
         d3.axisBottom(x1)
-          .tickSize(-plotHeight)
+          .tickSize(-plotHeight1)
       );
     g1.append("g")
       .attr("class", "grid y-grid")
@@ -431,18 +441,19 @@ function drawScene2(data) {
       .attr("x", width / 2)
       .attr("y", -30)
       .attr("text-anchor", "middle")
-      .style("font-size", "18px")
-      .text(`Occupation Scatter — ${selectedYear}, Level: ${selectedLevel}`);
+      .style("font-size", "25px")
+      .style("font-weight", "bold")
+      .text(`Occupation — ${selectedYear}, Level: ${selectedLevel}`);
 
     g1.append("text")
       .attr("x", width / 2)
-      .attr("y", plotHeight + 40)
+      .attr("y", plotHeight1 + 40)
       .attr("text-anchor", "middle")
       .text("Annual Mean Salary");
 
     g1.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("x", -plotHeight / 2)
+      .attr("x", -plotHeight1/2)
       .attr("y", -60)
       .attr("text-anchor", "middle")
       .text("Total Employment");
@@ -486,22 +497,27 @@ function drawScene2(data) {
         d => d.year
       ).map(([year, values]) => values);
     }
+    
+    const paddingDays = 30; 
+    const years = d3.extent(lineData, d => d.date);
+    const paddedMinDate = d3.timeDay.offset(years[0], -paddingDays);
+    const paddedMaxDate = d3.timeDay.offset(years[1], paddingDays);
 
-    const x2 = d3.scaleTime().domain(d3.extent(lineData, d => d.date)).range([0, width]);
+    const x2 = d3.scaleTime().domain([paddedMinDate, paddedMaxDate]).range([0, width]);
 
     const y2Min = d3.min(lineData, d => d.annual_percentile_10);
     const y2Max = d3.max(lineData, d => d.annual_percentile_90);
-    const y2AdjustedMin = y2Min * (1 - marginPercentage);
-    const y2AdjustedMax = y2Max * (1 + marginPercentage);
+    const y2AdjustedMin = y2Min * (1 - marginPercentage*2);
+    const y2AdjustedMax = y2Max * (1 + marginPercentage*2);
 
-    const y2 = d3.scaleLinear().domain([y2AdjustedMin, y2AdjustedMax]).range([plotHeight, 0]);
+    const y2 = d3.scaleLinear().domain([y2AdjustedMin, y2AdjustedMax]).range([plotHeight2, 0]);
 
     g2.append("g")
       .attr("class", "grid x-grid")
-      .attr("transform", `translate(0,${plotHeight})`)
+      .attr("transform", `translate(0,${plotHeight2})`)
       .call(
         d3.axisBottom(x2)
-          .tickSize(-plotHeight)
+          .tickSize(-plotHeight2)
           .tickFormat(d3.timeFormat("%Y"))
         );
     g2.append("g")
@@ -537,7 +553,7 @@ function drawScene2(data) {
         .attr("class", `dot-${p.key}`)
         .attr("cx", d => x2(d.date))
         .attr("cy", d => y2(d[p.key]))
-        .attr("r", 4)
+        .attr("r", 8)
         .attr("fill", p.color)
         .on("mouseover", (event, d) => {
           tooltip
@@ -565,18 +581,19 @@ function drawScene2(data) {
       .attr("x", width / 2)
       .attr("y", -30)
       .attr("text-anchor", "middle")
-      .style("font-size", "18px")
+      .style("font-size", "25px")
+      .style("font-weight", "bold")
       .text(`Income Over Time — ${selectedTitle}`);
 
     g2.append("text")
       .attr("x", width / 2)
-      .attr("y", plotHeight + 40)
+      .attr("y", plotHeight2 + 40)
       .attr("text-anchor", "middle")
       .text("Year");
 
     g2.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("x", -plotHeight / 2)
+      .attr("x", -plotHeight2 / 2)
       .attr("y", -60)
       .attr("text-anchor", "middle")
       .text("Income (USD)");
