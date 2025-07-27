@@ -171,6 +171,16 @@ function drawScene1(data) {
   const height = +svg.attr("height") - margin.top - margin.bottom;
   const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
+  const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("position", "absolute")
+    .style("padding", "6px")
+    .style("background", "#fff")
+    .style("border", "1px solid #ccc")
+    .style("border-radius", "5px")
+    .style("pointer-events", "none")
+    .style("display", "none");
+
   const occupation = "Management Occupations";
   const filtered = data.filter(d => d.occupation_title === occupation);
 
@@ -219,6 +229,29 @@ function drawScene1(data) {
       .attr("stroke", p.color)
       .attr("stroke-width", 2)
       .attr("d", line);
+
+    g.selectAll(`.dot-${p.key}`)
+      .data(filtered)
+      .join("circle")
+      .attr("class", `dot-${p.key}`)
+      .attr("cx", d => x(d.date))
+      .attr("cy", d => y(d[p.key]))
+      .attr("r", 4)
+      .attr("fill", p.color)
+      .on("mouseover", (event, d) => {
+        tooltip
+          .style("display", "block")
+          .html(`
+            <strong>${p.key.replace('annual_percentile_', 'P')}:</strong> $${d[p.key].toLocaleString()}<br>
+            <strong>Year:</strong> ${d3.timeFormat('%Y')(d.date)}
+          `);
+      })
+      .on("mousemove", event => {
+        tooltip
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY - 30) + "px");
+      })
+      .on("mouseout", () => tooltip.style("display", "none"));
 
     g.append("text")
       .attr("x", width - 60)
@@ -497,6 +530,29 @@ function drawScene2(data) {
         .attr("stroke", p.color)
         .attr("stroke-width", 2)
         .attr("d", line);
+
+      g2.selectAll(`.dot-${p.key}`)
+        .data(lineData)
+        .join("circle")
+        .attr("class", `dot-${p.key}`)
+        .attr("cx", d => x2(d.date))
+        .attr("cy", d => y2(d[p.key]))
+        .attr("r", 4)
+        .attr("fill", p.color)
+        .on("mouseover", (event, d) => {
+          tooltip
+            .style("display", "block")
+            .html(`
+              <strong>${p.key.replace('annual_percentile_', 'P')}:</strong> $${d[p.key].toLocaleString()}<br>
+              <strong>Year:</strong> ${d3.timeFormat('%Y')(d.date)}
+            `);
+        })
+        .on("mousemove", event => {
+          tooltip
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 30) + "px");
+        })
+        .on("mouseout", () => tooltip.style("display", "none"));
 
       g2.append("text")
         .attr("x", width - 60)
