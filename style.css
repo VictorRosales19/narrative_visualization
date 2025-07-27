@@ -63,3 +63,17 @@ svg {
   pointer-events: none;
   z-index: 10;
 }
+
+.visualization-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+#vis {
+  flex-shrink: 0;
+}
+
+.additional-content {
+  flex: 1;
+}
