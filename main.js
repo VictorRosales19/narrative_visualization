@@ -1,6 +1,6 @@
 let currentScene = 0;
 let data;
-const scenes = [drawScene0, drawScene1, drawScene2];
+const scenes = [drawScene0, drawScene1, drawScene2, drawScene3, drawScene4];
 
 d3.csv("data/consolidated_dataset.csv", d3.autoType).then(csv => {
   csv.forEach(d => {
@@ -139,14 +139,15 @@ function drawScene0(data) {
   const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
 
   let xOffset = 550;
+  let yOffset = 25;
   shape.domain().forEach((level, i) => {
     legend.append("path")
-      .attr("transform", `translate(${xOffset}, 0)`)
+      .attr("transform", `translate(${xOffset}, ${yOffset})`)
       .attr("d", d3.symbol().type(shape(level)).size(70)())
       .attr("fill", "#555");
     legend.append("text")
       .attr("x", xOffset + 15)
-      .attr("y", 5)
+      .attr("y", yOffset + 5)
       .text(level);
     xOffset += 90;
   });
@@ -184,7 +185,289 @@ function drawScene1(data) {
     .style("pointer-events", "none")
     .style("display", "none");
 
-  const occupation = "Management Occupations";
+  const occupationTitle = "Management Occupations";
+  const filtered = data.filter(d => 
+    d.occupation_title === occupationTitle
+    && d.annual_mean > 0 
+    && d.total_employment > 0
+  );
+
+  const marginPercentage = 0.1;
+
+  const xExtent = d3.extent(filtered, d => d.annual_mean);
+  const xAdjustedMin = xExtent[0] * (1 - marginPercentage);
+  const xAdjustedMax = xExtent[1] * (1 + marginPercentage);
+
+  const x = d3.scaleLog()
+    .domain([xAdjustedMin, xAdjustedMax])
+    .range([0, width]);
+
+  const yExtent = d3.extent(filtered, d => d.total_employment);
+  const yAdjustedMin = yExtent[0] * (1 - marginPercentage*2);
+  const yAdjustedMax = yExtent[1] * (1 + marginPercentage*2);
+  
+  const y = d3.scaleLog()
+    .domain([yAdjustedMin, yAdjustedMax])
+    .range([height, 0]);
+
+  const yearExtent = d3.extent(data, d => d.year);
+  const color = d3.scaleLinear()
+    .domain(yearExtent) 
+    .range(["lightblue", "darkblue"]);
+  
+  const shape = d3.scaleOrdinal()
+    .domain([...new Set(data.map(d => d.occupation_level))])
+    .range([d3.symbolSquare, d3.symbolTriangle]);
+
+  g.append("g")
+    .attr("class", "grid x-grid")
+    .attr("transform", `translate(0,${height})`)
+    .call(
+      d3.axisBottom(x)
+        .tickSize(-height)
+    );
+    
+  g.append("g")
+    .attr("class", "grid y-grid")
+    .call(
+      d3.axisLeft(y)
+        .tickSize(-width)
+    );
+
+  // Axis titles
+  g.append("text")
+    .attr("x", width / 2)
+    .attr("y", height + 40)
+    .attr("text-anchor", "middle")
+    .text("Annual Mean Salary");
+
+  g.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -40)
+    .attr("text-anchor", "middle")
+    .text("Total Employment");
+
+  // Data
+  g.selectAll("path.point")
+    .data(filtered)
+    .enter()
+    .append("path")
+    .attr("d", d => d3.symbol().type(shape(d.occupation_level)).size(70)())
+    .attr("transform", d => `translate(${x(d.annual_mean)},${y(d.total_employment)})`)
+    .attr("fill", d => color(d.year))
+    .on("mousemove", (e, d) => {
+      tooltip.style("display", "block")
+        .style("left", `${e.pageX + 10}px`)
+        .style("top", `${e.pageY - 30}px`)
+        .html(`<strong>${d.occupation_title}</strong><br>
+          Income: $${d.annual_mean.toLocaleString()}<br>
+          Employment: ${d.total_employment.toLocaleString()}<br>
+          Year: ${d3.timeFormat('%Y')(d.date)}`);
+    })
+    .on("mouseout", () => tooltip.style("display", "none"));
+
+  // Plot title
+  svg.append("text")
+    .attr("x", svg.attr("width") / 2)
+    .attr("y", 30)
+    .attr("text-anchor", "middle")
+    .style("font-size", "25px")
+    .style("font-weight", "bold")
+    .text(`Occupation Overview - ${occupationTitle}`);
+
+  // Legend
+  const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
+
+  let xOffset = 550;
+  let yOffset = 25;
+  shape.domain().forEach((level, i) => {
+    legend.append("path")
+      .attr("transform", `translate(${xOffset}, ${yOffset})`)
+      .attr("d", d3.symbol().type(shape(level)).size(70)())
+      .attr("fill", "#555");
+    legend.append("text")
+      .attr("x", xOffset + 15)
+      .attr("y", yOffset + 5)
+      .text(level);
+    xOffset += 90;
+  });
+
+  // Annotations
+  const annotations = [ {
+    note: { label: "High employment & income" },
+    x: x(123000),
+    y: y(8000000),
+    dx: 25,
+    dy: -25
+  } ];
+
+  const makeAnnotations = d3.annotation().annotations(annotations);
+  g.append("g").call(makeAnnotations);
+}
+
+function drawScene2(data) {
+  d3.select("#filters").style("display", "none"); // avoid show filters
+
+  const svg = d3.select("#vis");
+  svg.attr("height",600);
+  const margin = {top: 60, right: 40, bottom: 60, left: 80};
+  const width = +svg.attr("width") - margin.left - margin.right;
+  const height = +svg.attr("height") - margin.top - margin.bottom;
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("position", "absolute")
+    .style("padding", "6px")
+    .style("background", "#fff")
+    .style("border", "1px solid #ccc")
+    .style("border-radius", "5px")
+    .style("pointer-events", "none")
+    .style("display", "none");
+
+  const occupationTitle = "Farming, Fishing, and Forestry Occupations";
+  const filtered = data.filter(d => 
+    d.occupation_title === occupationTitle
+    && d.annual_mean > 0 
+    && d.total_employment > 0
+  );
+
+  const marginPercentage = 0.1;
+
+  const xExtent = d3.extent(filtered, d => d.annual_mean);
+  const xAdjustedMin = xExtent[0] * (1 - marginPercentage);
+  const xAdjustedMax = xExtent[1] * (1 + marginPercentage);
+
+  const x = d3.scaleLog()
+    .domain([xAdjustedMin, xAdjustedMax])
+    .range([0, width]);
+
+  const yExtent = d3.extent(filtered, d => d.total_employment);
+  const yAdjustedMin = yExtent[0] * (1 - marginPercentage*2);
+  const yAdjustedMax = yExtent[1] * (1 + marginPercentage*2);
+  
+  const y = d3.scaleLog()
+    .domain([yAdjustedMin, yAdjustedMax])
+    .range([height, 0]);
+
+  const yearExtent = d3.extent(data, d => d.year);
+  const color = d3.scaleLinear()
+    .domain(yearExtent) 
+    .range(["lightblue", "darkblue"]);
+  
+  const shape = d3.scaleOrdinal()
+    .domain([...new Set(data.map(d => d.occupation_level))])
+    .range([d3.symbolSquare, d3.symbolTriangle]);
+
+  g.append("g")
+    .attr("class", "grid x-grid")
+    .attr("transform", `translate(0,${height})`)
+    .call(
+      d3.axisBottom(x)
+        .tickSize(-height)
+    );
+    
+  g.append("g")
+    .attr("class", "grid y-grid")
+    .call(
+      d3.axisLeft(y)
+        .tickSize(-width)
+    );
+
+  // Axis titles
+  g.append("text")
+    .attr("x", width / 2)
+    .attr("y", height + 40)
+    .attr("text-anchor", "middle")
+    .text("Annual Mean Salary");
+
+  g.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -40)
+    .attr("text-anchor", "middle")
+    .text("Total Employment");
+
+  // Data
+  g.selectAll("path.point")
+    .data(filtered)
+    .enter()
+    .append("path")
+    .attr("d", d => d3.symbol().type(shape(d.occupation_level)).size(70)())
+    .attr("transform", d => `translate(${x(d.annual_mean)},${y(d.total_employment)})`)
+    .attr("fill", d => color(d.year))
+    .on("mousemove", (e, d) => {
+      tooltip.style("display", "block")
+        .style("left", `${e.pageX + 10}px`)
+        .style("top", `${e.pageY - 30}px`)
+        .html(`<strong>${d.occupation_title}</strong><br>
+          Income: $${d.annual_mean.toLocaleString()}<br>
+          Employment: ${d.total_employment.toLocaleString()}<br>
+          Year: ${d3.timeFormat('%Y')(d.date)}`);
+    })
+    .on("mouseout", () => tooltip.style("display", "none"));
+
+  // Plot title
+  svg.append("text")
+    .attr("x", svg.attr("width") / 2)
+    .attr("y", 30)
+    .attr("text-anchor", "middle")
+    .style("font-size", "25px")
+    .style("font-weight", "bold")
+    .text(`Occupation Overview - ${occupationTitle}`);
+
+  // Legend
+  const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
+
+  let xOffset = 550;
+  let yOffset = 25;
+  shape.domain().forEach((level, i) => {
+    legend.append("path")
+      .attr("transform", `translate(${xOffset}, ${yOffset})`)
+      .attr("d", d3.symbol().type(shape(level)).size(70)())
+      .attr("fill", "#555");
+    legend.append("text")
+      .attr("x", xOffset + 15)
+      .attr("y", yOffset + 5)
+      .text(level);
+    xOffset += 90;
+  });
+
+  // Annotations
+  const annotations = [ {
+    note: { label: "High employment & income" },
+    x: x(123000),
+    y: y(8000000),
+    dx: 25,
+    dy: -25
+  } ];
+
+  const makeAnnotations = d3.annotation().annotations(annotations);
+  g.append("g").call(makeAnnotations);
+}
+
+function drawScene3(data) {
+  d3.select("#filters").style("display", "none"); // avoid show filters
+
+  const svg = d3.select("#vis");
+  svg.attr("height",600);
+  const margin = {top: 60, right: 40, bottom: 60, left: 80};
+  const width = +svg.attr("width") - margin.left - margin.right;
+  const height = +svg.attr("height") - margin.top - margin.bottom;
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("position", "absolute")
+    .style("padding", "6px")
+    .style("background", "#fff")
+    .style("border", "1px solid #ccc")
+    .style("border-radius", "5px")
+    .style("pointer-events", "none")
+    .style("display", "none");
+
+  const occupation = "Legal Occupations";
   const filtered = data.filter(d => d.occupation_title === occupation);
 
   const paddingDays = 30; 
@@ -290,7 +573,7 @@ function drawScene1(data) {
     .text(`Income Over Time — ${occupation}`);
 }
 
-function drawScene2(data) {
+function drawScene4(data) {
   const svg = d3.select("#vis");
   svg.attr("height",1000);
 
