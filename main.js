@@ -48,7 +48,7 @@ function drawScene0(data) {
     .style("pointer-events", "none")
     .style("display", "none");
 
-  const year = 2019;
+  const year = 2024;
   const filtered = data.filter(d => d.year === year && d.annual_mean > 0 && d.total_employment > 0);
 
   const marginPercentage = 0.1;
@@ -69,7 +69,11 @@ function drawScene0(data) {
     .domain([yAdjustedMin, yAdjustedMax])
     .range([height, 0]);
 
-  const color = d3.scaleOrdinal(d3.schemeCategory10).domain([...new Set(data.map(d => d.year))]);
+  const yearExtent = d3.extent(data, d => d.year);
+  const color = d3.scaleLinear()
+    .domain(yearExtent) 
+    .range(["lightblue", "darkblue"]);
+  
   const shape = d3.scaleOrdinal()
     .domain([...new Set(data.map(d => d.occupation_level))])
     .range([d3.symbolSquare, d3.symbolTriangle]);
@@ -349,7 +353,11 @@ function drawScene2(data) {
 
     const y1 = d3.scaleLog().domain([y1AdjustedMin, y1AdjustedMax]).range([plotHeight, 0]);
 
-    const color = d3.scaleOrdinal(d3.schemeCategory10).domain([...new Set(data.map(d => d.year))]);
+    const yearExtent = d3.extent(data, d => d.year);
+    const color = d3.scaleLinear()
+      .domain(yearExtent) 
+      .range(["lightblue", "darkblue"]);
+    
     const shape = d3.scaleOrdinal()
       .domain([...new Set(data.map(d => d.occupation_level))])
       .range([d3.symbolSquare, d3.symbolTriangle]);
