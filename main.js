@@ -260,10 +260,11 @@ function drawScene2(data) {
   const levels = Array.from(new Set(data.map(d => d.occupation_level))).sort();
   const levelsOptions = ["All", ...levels];
   const titles = Array.from(new Set(data.map(d => d.occupation_title))).sort();
+  const titlesOptions = ["All", ...titles];
 
   populateSelect("#yearSelect", yearsOptions);
   populateSelect("#levelSelect", levelsOptions);
-  populateSelect("#titleSelect", titles);
+  populateSelect("#titleSelect", titlesOptions);
 
   function populateSelect(id, values) {
     const sel = d3.select(id).selectAll("option")
@@ -276,7 +277,7 @@ function drawScene2(data) {
   // Initial values
   let selectedYear = yearsOptions[0];
   let selectedLevel = levelsOptions[0];
-  let selectedTitle = titles[0];
+  let selectedTitle = titlesOptions[0];
 
   d3.select("#yearSelect").on("change", () => {
     selectedYear = d3.select("#yearSelect").property("value");
@@ -284,6 +285,7 @@ function drawScene2(data) {
   });
   d3.select("#levelSelect").on("change", () => {
     selectedLevel = d3.select("#levelSelect").property("value");
+    updateOccupationTitles();
     updateScene();
   });
   d3.select("#titleSelect").on("change", () => {
@@ -301,6 +303,18 @@ function drawScene2(data) {
     .style("pointer-events", "none")
     .style("display", "none");
 
+  function updateOccupationTitles() {
+    const currentLevel = d3.select("#levelSelect").property("value");
+
+    let relevantTitles = data;
+    if (currentLevel !== "All") {
+      relevantTitles = relevantTitles.filter(d => d.occupation_level === currentLevel);
+    }
+
+    const titles = Array.from(new Set(relevantTitles.map(d => d.occupation_title))).sort();
+    populateSelect("#titleSelect", ["All", ...titles]);
+  }
+
   function updateScene() {
     svg.selectAll("*").remove();
 
@@ -311,14 +325,15 @@ function drawScene2(data) {
       d.annual_mean > 0 && d.total_employment > 0
     );
 
-    if (selectedYear!="All") {
+    if (selectedYear!=="All") {
       scatterData = scatterData.filter(d => d.year === +selectedYear)
     }
-    if (selectedLevel!="All") {
+    if (selectedLevel!=="All") {
       scatterData = scatterData.filter(d => d.occupation_level === selectedLevel)
     }
-
-
+    if (selectedTitle!=="All") {
+      scatterData = scatterData.filter(d => d.occupation_title === selectedTitle)
+    }
 
     const marginPercentage = 0.1;
 
@@ -407,7 +422,29 @@ function drawScene2(data) {
       xOffset += 90;
     });
 
-    const lineData = data.filter(d => d.occupation_title === selectedTitle);
+    let lineData = data;
+
+    if (selectedLevel !== "All") {
+      lineData = lineData.filter(d => d.occupation_level === selectedLevel);
+    }
+
+    if (selectedTitle !== "All") {
+      lineData = lineData.filter(d => d.occupation_title === selectedTitle);
+    } else {
+      lineData = d3.rollups(
+        lineData,
+        v => ({
+          annual_percentile_10: d3.mean(v, d => d.annual_percentile_10),
+          annual_percentile_25: d3.mean(v, d => d.annual_percentile_25),
+          annual_percentile_50: d3.mean(v, d => d.annual_percentile_50),
+          annual_percentile_75: d3.mean(v, d => d.annual_percentile_75),
+          annual_percentile_90: d3.mean(v, d => d.annual_percentile_90),
+          date: v[0].date,
+          year: v[0].year
+        }),
+        d => d.year
+      ).map(([year, values]) => values);
+    }
 
     const x2 = d3.scaleTime().domain(d3.extent(lineData, d => d.date)).range([0, width]);
 
