@@ -31,10 +31,30 @@ d3.select("#prevBtn").on("click", () => {
 
 function drawScene0(data) {
   d3.select("#filters").style("display", "none"); // avoid show filters
+  const contentDiv = d3.select('#content');
+  contentDiv.html('');
+  contentDiv.append("p").text("The labor market can be divided into four quadrants based on pay and employment levels:");
+  contentDiv.append('ol').attr("id", "myList");
+  
+  const paragraphs = [
+    "High Pay, High Employment: Jobs with good salaries and many opportunities." ,
+    "High Pay, Low Employment: Well-paying positions with fewer openings, often due to high skill requirements." ,
+    "Low Pay, High Employment: Numerous job opportunities but lower wages, typical of entry-level roles." ,
+    "Low Pay, Low Employment: Limited job openings and lower compensation, often reflecting economic challenges." ,
+  ];
+  const textList = d3.select('#myList');
+
+  paragraphs.forEach(text => {
+    textList.append('li')
+      .text(text)
+      .style("margin-bottom", "15px");
+  });
+
+  contentDiv.append("p").text("These quadrants provide insight into job market trends and the overall financial landscape.");
 
   const svg = d3.select("#vis");
-  svg.attr("height",600);
-  const margin = {top: 60, right: 40, bottom: 60, left: 80};
+  svg.attr("height", 600);
+  const margin = {top: 60, right: 200, bottom: 60, left: 80};
   const width = +svg.attr("width") - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
   const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
@@ -138,18 +158,37 @@ function drawScene0(data) {
   // Legend
   const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
 
-  let xOffset = 550;
-  let yOffset = 25;
+  let xOffset = 980;
+  let yOffset = 65;
   shape.domain().forEach((level, i) => {
-    legend.append("path")
-      .attr("transform", `translate(${xOffset}, ${yOffset})`)
-      .attr("d", d3.symbol().type(shape(level)).size(70)())
+    const legendItem = legend.append("g")
+      .attr("transform", `translate(${xOffset}, ${yOffset + i * 20})`); 
+
+    legendItem.append("path")
+      .attr("transform", `translate(5, ${6 + i * 2})`)
+      .attr("d", d3.symbol().type(shape(level)).size(120)())
       .attr("fill", "#555");
-    legend.append("text")
-      .attr("x", xOffset + 15)
-      .attr("y", yOffset + 5)
+
+    legendItem.append("text")
+      .attr("x", 20)
+      .attr("y", 12)
       .text(level);
-    xOffset += 90;
+  });
+
+  const yearsElements = Array.from(new Set(filtered.map(d => d.year))).sort().reverse();
+  yearsElements.forEach((level, i) => {
+    const legendItem = legend.append("g")
+      .attr("transform", `translate(${xOffset}, ${yOffset*3 + i * 20})`);
+
+    legendItem.append("rect")
+      .attr("width", 12)
+      .attr("height", 12)
+      .attr("fill", color(level));
+
+    legendItem.append("text")
+      .attr("x", 20)
+      .attr("y", 12)
+      .text(level);
   });
 
   // Annotations
@@ -167,10 +206,15 @@ function drawScene0(data) {
 
 function drawScene1(data) {
   d3.select("#filters").style("display", "none"); // avoid show filters
+  const contentDiv = d3.select('#content');
+  contentDiv.html('');
+  contentDiv.append("p").text("Si es dinamico");
+
+  contentDiv.append("p").text("These quadrants provide insight into job market trends and the overall financial landscape.");
 
   const svg = d3.select("#vis");
   svg.attr("height", 600);
-  const margin = {top: 60, right: 40, bottom: 60, left: 80};
+  const margin = {top: 60, right: 200, bottom: 60, left: 80};
   const width = +svg.attr("width") - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
   const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
@@ -281,18 +325,37 @@ function drawScene1(data) {
   // Legend
   const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
 
-  let xOffset = 550;
-  let yOffset = 25;
+  let xOffset = 980;
+  let yOffset = 65;
   shape.domain().forEach((level, i) => {
-    legend.append("path")
-      .attr("transform", `translate(${xOffset}, ${yOffset})`)
-      .attr("d", d3.symbol().type(shape(level)).size(70)())
+    const legendItem = legend.append("g")
+      .attr("transform", `translate(${xOffset}, ${yOffset + i * 20})`); 
+
+    legendItem.append("path")
+      .attr("transform", `translate(5, ${6 + i * 2})`)
+      .attr("d", d3.symbol().type(shape(level)).size(120)())
       .attr("fill", "#555");
-    legend.append("text")
-      .attr("x", xOffset + 15)
-      .attr("y", yOffset + 5)
+
+    legendItem.append("text")
+      .attr("x", 20)
+      .attr("y", 12)
       .text(level);
-    xOffset += 90;
+  });
+
+  const yearsElements = Array.from(new Set(filtered.map(d => d.year))).sort().reverse();
+  yearsElements.forEach((level, i) => {
+    const legendItem = legend.append("g")
+      .attr("transform", `translate(${xOffset}, ${yOffset*3 + i * 20})`);
+
+    legendItem.append("rect")
+      .attr("width", 12)
+      .attr("height", 12)
+      .attr("fill", color(level));
+
+    legendItem.append("text")
+      .attr("x", 20)
+      .attr("y", 12)
+      .text(level);
   });
 
   // Annotations
@@ -312,8 +375,8 @@ function drawScene2(data) {
   d3.select("#filters").style("display", "none"); // avoid show filters
 
   const svg = d3.select("#vis");
-  svg.attr("height",600);
-  const margin = {top: 60, right: 40, bottom: 60, left: 80};
+  svg.attr("height", 600);
+  const margin = {top: 60, right: 200, bottom: 60, left: 80};
   const width = +svg.attr("width") - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
   const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
@@ -422,18 +485,37 @@ function drawScene2(data) {
   // Legend
   const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
 
-  let xOffset = 550;
-  let yOffset = 25;
+  let xOffset = 980;
+  let yOffset = 65;
   shape.domain().forEach((level, i) => {
-    legend.append("path")
-      .attr("transform", `translate(${xOffset}, ${yOffset})`)
-      .attr("d", d3.symbol().type(shape(level)).size(70)())
+    const legendItem = legend.append("g")
+      .attr("transform", `translate(${xOffset}, ${yOffset + i * 20})`); 
+
+    legendItem.append("path")
+      .attr("transform", `translate(5, ${6 + i * 2})`)
+      .attr("d", d3.symbol().type(shape(level)).size(120)())
       .attr("fill", "#555");
-    legend.append("text")
-      .attr("x", xOffset + 15)
-      .attr("y", yOffset + 5)
+
+    legendItem.append("text")
+      .attr("x", 20)
+      .attr("y", 12)
       .text(level);
-    xOffset += 90;
+  });
+
+  const yearsElements = Array.from(new Set(filtered.map(d => d.year))).sort().reverse();
+  yearsElements.forEach((level, i) => {
+    const legendItem = legend.append("g")
+      .attr("transform", `translate(${xOffset}, ${yOffset*3 + i * 20})`);
+
+    legendItem.append("rect")
+      .attr("width", 12)
+      .attr("height", 12)
+      .attr("fill", color(level));
+
+    legendItem.append("text")
+      .attr("x", 20)
+      .attr("y", 12)
+      .text(level);
   });
 
   // Annotations
@@ -453,8 +535,8 @@ function drawScene3(data) {
   d3.select("#filters").style("display", "none"); // avoid show filters
 
   const svg = d3.select("#vis");
-  svg.attr("height",600);
-  const margin = {top: 60, right: 40, bottom: 60, left: 80};
+  svg.attr("height", 600);
+  const margin = {top: 60, right: 200, bottom: 60, left: 80};
   const width = +svg.attr("width") - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
   const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
@@ -563,18 +645,37 @@ function drawScene3(data) {
   // Legend
   const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
 
-  let xOffset = 550;
-  let yOffset = 25;
+  let xOffset = 980;
+  let yOffset = 65;
   shape.domain().forEach((level, i) => {
-    legend.append("path")
-      .attr("transform", `translate(${xOffset}, ${yOffset})`)
-      .attr("d", d3.symbol().type(shape(level)).size(70)())
+    const legendItem = legend.append("g")
+      .attr("transform", `translate(${xOffset}, ${yOffset + i * 20})`); 
+
+    legendItem.append("path")
+      .attr("transform", `translate(5, ${6 + i * 2})`)
+      .attr("d", d3.symbol().type(shape(level)).size(120)())
       .attr("fill", "#555");
-    legend.append("text")
-      .attr("x", xOffset + 15)
-      .attr("y", yOffset + 5)
+
+    legendItem.append("text")
+      .attr("x", 20)
+      .attr("y", 12)
       .text(level);
-    xOffset += 90;
+  });
+
+  const yearsElements = Array.from(new Set(filtered.map(d => d.year))).sort().reverse();
+  yearsElements.forEach((level, i) => {
+    const legendItem = legend.append("g")
+      .attr("transform", `translate(${xOffset}, ${yOffset*3 + i * 20})`);
+
+    legendItem.append("rect")
+      .attr("width", 12)
+      .attr("height", 12)
+      .attr("fill", color(level));
+
+    legendItem.append("text")
+      .attr("x", 20)
+      .attr("y", 12)
+      .text(level);
   });
 
   // Annotations
@@ -594,8 +695,8 @@ function drawScene4(data) {
   d3.select("#filters").style("display", "none"); // avoid show filters
 
   const svg = d3.select("#vis");
-  svg.attr("height",600);
-  const margin = {top: 60, right: 40, bottom: 60, left: 80};
+  svg.attr("height", 600);
+  const margin = {top: 60, right: 200, bottom: 60, left: 80};
   const width = +svg.attr("width") - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
   const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
@@ -718,13 +819,13 @@ function drawScene4(data) {
 
 function drawScene5(data) {
   const svg = d3.select("#vis");
-  svg.attr("height",1000);
+  svg.attr("height", 1000);
 
-  const margin = { top: 80, right: 100, bottom: 80, left: 100 };
+  const margin = {top: 60, right: 200, bottom: 60, left: 80};
   const width = +svg.attr("width") - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
   const plotHeight1 =  5*((height / 9));
-  const plotHeight2 = height - plotHeight1 - height/8;
+  const plotHeight2 = height - plotHeight1 - height/7;
 
   d3.select("#filters").style("display", "block");
 
@@ -881,24 +982,44 @@ function drawScene5(data) {
     g1.append("text")
       .attr("transform", "rotate(-90)")
       .attr("x", -plotHeight1/2)
-      .attr("y", -60)
+      .attr("y", -40)
       .attr("text-anchor", "middle")
       .text("Total Employment");
 
-      const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
+    // Legend
+    const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
 
-    let xOffset = 500;
-    let yOffset = 40;
+    let xOffset = 980;
+    let yOffset = 65;
     shape.domain().forEach((level, i) => {
-      legend.append("path")
-        .attr("transform", `translate(${xOffset}, ${yOffset})`)
-        .attr("d", d3.symbol().type(shape(level)).size(70)())
+      const legendItem = legend.append("g")
+        .attr("transform", `translate(${xOffset}, ${yOffset + i * 20})`); 
+
+      legendItem.append("path")
+        .attr("transform", `translate(5, ${6 + i * 2})`)
+        .attr("d", d3.symbol().type(shape(level)).size(120)())
         .attr("fill", "#555");
-      legend.append("text")
-        .attr("x", xOffset + 15)
-        .attr("y", yOffset + 5)
+
+      legendItem.append("text")
+        .attr("x", 20)
+        .attr("y", 12)
         .text(level);
-      xOffset += 90;
+    });
+
+    const yearsElements = Array.from(new Set(scatterData.map(d => d.year))).sort().reverse();
+    yearsElements.forEach((level, i) => {
+      const legendItem = legend.append("g")
+        .attr("transform", `translate(${xOffset}, ${yOffset*3 + i * 20})`);
+
+      legendItem.append("rect")
+        .attr("width", 12)
+        .attr("height", 12)
+        .attr("fill", color(level));
+
+      legendItem.append("text")
+        .attr("x", 20)
+        .attr("y", 12)
+        .text(level);
     });
 
     let lineData = data;
@@ -1021,7 +1142,7 @@ function drawScene5(data) {
     g2.append("text")
       .attr("transform", "rotate(-90)")
       .attr("x", -plotHeight2 / 2)
-      .attr("y", -60)
+      .attr("y", -40)
       .attr("text-anchor", "middle")
       .text("Income (USD)");
   }
