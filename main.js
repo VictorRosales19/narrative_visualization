@@ -38,6 +38,16 @@ function drawScene0(data) {
   const height = +svg.attr("height") - margin.top - margin.bottom;
   const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
+  const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("position", "absolute")
+    .style("padding", "6px")
+    .style("background", "#fff")
+    .style("border", "1px solid #ccc")
+    .style("border-radius", "5px")
+    .style("pointer-events", "none")
+    .style("display", "none");
+
   const year = 2019;
   const filtered = data.filter(d => d.year === year && d.annual_mean > 0 && d.total_employment > 0);
 
@@ -100,7 +110,16 @@ function drawScene0(data) {
     .append("path")
     .attr("d", d => d3.symbol().type(shape(d.occupation_level)).size(70)())
     .attr("transform", d => `translate(${x(d.annual_mean)},${y(d.total_employment)})`)
-    .attr("fill", d => color(d.year));
+    .attr("fill", d => color(d.year))
+    .on("mousemove", (e, d) => {
+      tooltip.style("display", "block")
+        .style("left", `${e.pageX + 10}px`)
+        .style("top", `${e.pageY - 30}px`)
+        .html(`<strong>${d.occupation_title}</strong><br>
+          Income: $${d.annual_mean.toLocaleString()}<br>
+          Employment: ${d.total_employment.toLocaleString()}`);
+    })
+    .on("mouseout", () => tooltip.style("display", "none"));
 
   // Plot title
   svg.append("text")
@@ -113,7 +132,7 @@ function drawScene0(data) {
   // Legend
   const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
 
-  let xOffset = 600;
+  let xOffset = 550;
   shape.domain().forEach((level, i) => {
     legend.append("path")
       .attr("transform", `translate(${xOffset}, 0)`)
@@ -341,7 +360,7 @@ function drawScene2(data) {
       .append("path")
       .attr("d", d => d3.symbol().type(shape(d.occupation_level)).size(70)())
       .attr("transform", d => `translate(${x1(d.annual_mean)},${y1(d.total_employment)})`)
-      .attr("fill", d => color(d.year))//;
+      .attr("fill", d => color(d.year))
       .on("mousemove", (e, d) => {
         tooltip.style("display", "block")
           .style("left", `${e.pageX + 10}px`)
@@ -371,6 +390,22 @@ function drawScene2(data) {
       .attr("y", -60)
       .attr("text-anchor", "middle")
       .text("Total Employment");
+
+      const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
+
+    let xOffset = 500;
+    let yOffset = 40;
+    shape.domain().forEach((level, i) => {
+      legend.append("path")
+        .attr("transform", `translate(${xOffset}, ${yOffset})`)
+        .attr("d", d3.symbol().type(shape(level)).size(70)())
+        .attr("fill", "#555");
+      legend.append("text")
+        .attr("x", xOffset + 15)
+        .attr("y", yOffset + 5)
+        .text(level);
+      xOffset += 90;
+    });
 
     const lineData = data.filter(d => d.occupation_title === selectedTitle);
 
