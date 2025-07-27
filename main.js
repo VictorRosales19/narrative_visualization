@@ -433,7 +433,8 @@ function drawScene2(data) {
           .style("top", `${e.pageY - 30}px`)
           .html(`<strong>${d.occupation_title}</strong><br>
             Income: $${d.annual_mean.toLocaleString()}<br>
-            Employment: ${d.total_employment.toLocaleString()}`);
+            Employment: ${d.total_employment.toLocaleString()}<br>
+            Year: ${d3.timeFormat('%Y')(d.date)}`);
       })
       .on("mouseout", () => tooltip.style("display", "none"));
 
