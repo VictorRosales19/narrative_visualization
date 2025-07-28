@@ -50,11 +50,11 @@ function drawScene0(data) {
       .style("margin-bottom", "15px");
   });
 
-  contentDiv.append("p").text("These quadrants provide insight into job market trends and the overall financial landscape.");
+  contentDiv.append("p").text("These quadrants provide insight into the overall financial landscape.");
 
   const svg = d3.select("#vis");
   svg.attr("height", 600);
-  const margin = {top: 60, right: 200, bottom: 60, left: 80};
+  const margin = {top: 60, right: 120, bottom: 60, left: 80};
   const width = +svg.attr("width") - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
   const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
@@ -158,7 +158,7 @@ function drawScene0(data) {
   // Legend
   const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
 
-  let xOffset = 980;
+  let xOffset = 830;
   let yOffset = 65;
   shape.domain().forEach((level, i) => {
     const legendItem = legend.append("g")
@@ -192,29 +192,113 @@ function drawScene0(data) {
   });
 
   // Annotations
-  const annotations = [ {
-    note: { label: "High employment & income" },
-    x: x(123000),
-    y: y(8000000),
-    dx: 25,
-    dy: -25
-  } ];
+  const middleY = height / 2;
+  g.append("line")
+    .attr("x1", 0)
+    .attr("y1", middleY)
+    .attr("x2", width)
+    .attr("y2", middleY)
+    .attr("stroke", "gray")
+    .attr("stroke-width", 1)
+    .style("stroke-dasharray", ("5, 5"));
+
+  const middleX = width / 2;
+  g.append("line")
+    .attr("x1", middleX)
+    .attr("y1", 0)
+    .attr("x2", middleX)
+    .attr("y2", height)
+    .attr("stroke", "gray")
+    .attr("stroke-width", 1)
+    .style("stroke-dasharray", ("5, 5"));
+
+  const annotations = [ 
+    {
+      note: { label: "High Pay, High Employment" },
+      x: x(140000),
+      y: y(5000000),
+      dx: 25,
+      dy: -25,
+      color: "#115104ff",
+      className: "my-annotation"
+    },
+    {
+      note: { label: "High Pay, Low Employment" },
+      x: x(140000),
+      y: y(100000),
+      dx: 25,
+      dy: 25,
+      color: "#5d7212ff",
+      className: "my-annotation"
+    },
+    {
+      note: { label: "Low Pay, High Employment" },
+      x: x(42000),
+      y: y(5000000),
+      dx: -25,
+      dy: -25,
+      color: "#ae8c07ff",
+      className: "my-annotation" 
+    },
+    {
+      note: { label: "Low Pay, Low Employment" },
+      x: x(42000),
+      y: y(100000),
+      dx: -25,
+      dy: 25,
+      color: "#760c0cff",
+      className: "my-annotation"
+    }
+  ];
 
   const makeAnnotations = d3.annotation().annotations(annotations);
   g.append("g").call(makeAnnotations);
+
+  g.selectAll(".my-annotation")
+    .style("font-weight", "bold");
 }
 
 function drawScene1(data) {
   d3.select("#filters").style("display", "none"); // avoid show filters
   const contentDiv = d3.select('#content');
   contentDiv.html('');
-  contentDiv.append("p").text("Si es dinamico");
+  contentDiv.append("p").text("There are two distinct levels of occupation:");
+  contentDiv.append('ol').attr("id", "myList");
+  
+  const paragraphs = [
+    "Major Level: This encompasses broad categories that include Professional and Related Occupations, as well as certain types of roles.",
+    "Minor Level: This consists of subsets within the major occupational categories, focusing on specific types of occupations." ,
+  ];
+  const textList = d3.select('#myList');
 
-  contentDiv.append("p").text("These quadrants provide insight into job market trends and the overall financial landscape.");
+  paragraphs.forEach(text => {
+    textList.append('li')
+      .text(text)
+      .style("margin-bottom", "15px");
+  });
+
+  contentDiv.append("p").text("For instance, Management occupations include the following occupation titles:");
+  // Add multiple paragraphs with an array of texts
+  contentDiv.append('ol').attr("id", "myListExamples");
+  
+  const occupations = [
+    "Top executives",
+    "Operations specialties managers",
+    "Advertising, marketing, and sales managers",
+    "Other management occupations",
+  ];
+  const textList_examples = d3.select('#myListExamples');
+
+  occupations.forEach(text => {
+    textList_examples.append('li')
+      .text(text)
+      .style("margin-bottom", "15px");
+  });
+
 
   const svg = d3.select("#vis");
   svg.attr("height", 600);
-  const margin = {top: 60, right: 200, bottom: 60, left: 80};
+  const margin = {top: 60, right: 120, bottom: 60, left: 80};
   const width = +svg.attr("width") - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
   const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
@@ -325,7 +409,7 @@ function drawScene1(data) {
   // Legend
   const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
 
-  let xOffset = 980;
+  let xOffset = 830;
   let yOffset = 65;
   shape.domain().forEach((level, i) => {
     const legendItem = legend.append("g")
@@ -359,24 +443,74 @@ function drawScene1(data) {
   });
 
   // Annotations
-  const annotations = [ {
-    note: { label: "High employment & income" },
-    x: x(123000),
-    y: y(8000000),
-    dx: 25,
-    dy: -25
-  } ];
+  const annotations = [ 
+    {
+      note: { label: "Occupation level: major" },
+      x: x(142000),
+      y: y(11000000),
+      dx: 25,
+      dy: 25,
+      color: "#135607ff",
+      className: "my-annotation"
+    },
+    {
+      note: { label: "Occupation level: minor" },
+      x: x(140000),
+      y: y(3800000),
+      dx: 25,
+      dy: -25,
+      color: "#60b83eff",
+      className: "my-annotation"
+    },
+    {
+      note: { label: "Occupation level: minor" },
+      x: x(121800),
+      y: y(3400000),
+      dx: 25,
+      dy: -25,
+      color: "#60b83eff",
+      className: "my-annotation"
+    },
+    {
+      note: { label: "Occupation level: minor" },
+      x: x(161000),
+      y: y(2700000),
+      dx: 25,
+      dy: -25,
+      color: "#60b83eff",
+      className: "my-annotation"
+    },
+    {
+      note: { label: "Occupation level: minor" },
+      x: x(164000),
+      y: y(1140000),
+      dx: 25,
+      dy: -25,
+      color: "#60b83eff",
+      className: "my-annotation"
+    }
+  ];
 
   const makeAnnotations = d3.annotation().annotations(annotations);
   g.append("g").call(makeAnnotations);
+
+  g.selectAll(".my-annotation")
+    .style("font-weight", "bold");
 }
 
 function drawScene2(data) {
   d3.select("#filters").style("display", "none"); // avoid show filters
+  const contentDiv = d3.select('#content');
+  // Clear previous content
+  contentDiv.html('');
+  contentDiv.append("p").text("Examination of the latest data reveal significant trends in the job market. We can identify occupations that are decreasing, those that remain stable, and those that are increasing.")
+  contentDiv.append("p").text("For instance, the job market is seeing an increase in management positions, with growth projected across various management categories.").style("margin-bottom", "20px");
+  contentDiv.append("p").text("Investigating additional material, we discovered that specifically, management occupations are expected to grow faster than the average for all occupations between 2023 and 2033, with an estimated 1.2 million openings each year.").style("margin-bottom", "20px");
+  contentDiv.append("p").text("This growth is driven by the need to replace workers leaving the field and by overall employment growth.");
 
   const svg = d3.select("#vis");
   svg.attr("height", 600);
-  const margin = {top: 60, right: 200, bottom: 60, left: 80};
+  const margin = {top: 60, right: 120, bottom: 60, left: 80};
   const width = +svg.attr("width") - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
   const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
@@ -485,7 +619,7 @@ function drawScene2(data) {
   // Legend
   const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
 
-  let xOffset = 980;
+  let xOffset = 830;
   let yOffset = 65;
   shape.domain().forEach((level, i) => {
     const legendItem = legend.append("g")
@@ -519,24 +653,45 @@ function drawScene2(data) {
   });
 
   // Annotations
+  g.append("line")
+    .attr("x1", x(117000))
+    .attr("y1", y(8000000))
+    .attr("x2", x(148000))
+    .attr("y2", y(11400000))
+    .attr("stroke", "darkgreen")
+    .attr("stroke-width", 1)
+    .style("stroke-dasharray", ("5, 5"));
+
   const annotations = [ {
-    note: { label: "High employment & income" },
-    x: x(123000),
-    y: y(8000000),
+    note: { label: "Increasing employment trend" },
+    x: x(145000),
+    y: y(11050000),
     dx: 25,
-    dy: -25
+    dy: -25,
+    color: "#135607ff",
+    className: "my-annotation"
   } ];
 
   const makeAnnotations = d3.annotation().annotations(annotations);
   g.append("g").call(makeAnnotations);
+
+  g.selectAll(".my-annotation")
+    .style("font-weight", "bold");
 }
 
 function drawScene3(data) {
   d3.select("#filters").style("display", "none"); // avoid show filters
+  const contentDiv = d3.select('#content');
+  contentDiv.html('');
 
+  contentDiv.append("p").text("On the other hand, we can also identify occupations that are decreasing.")
+  contentDiv.append("p").text("For instance, the farming industry is at a crucial crossroads, facing a notable decline in the number of farmers.").style("margin-bottom", "20px");
+  contentDiv.append("p").text("Investigating additional material, we discovered that this trend raises urgent concerns about the sustainability of agricultural careers, primarily fueled by factors like low wages and a physically demanding work environment.").style("margin-bottom", "20px");
+  contentDiv.append("p").text("As farmers grapple with labor shortages and an aging workforce, the perception of farming as undesirable work becomes increasingly problematic.").style("margin-bottom", "20px");
+  contentDiv.append("p").text("Coupled with the uncertainties of immigration policy and rising labor costs, it's clear that we need to rethink how we can support and revitalize this vital industry").style("margin-bottom", "20px");
   const svg = d3.select("#vis");
   svg.attr("height", 600);
-  const margin = {top: 60, right: 200, bottom: 60, left: 80};
+  const margin = {top: 60, right: 120, bottom: 60, left: 80};
   const width = +svg.attr("width") - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
   const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
@@ -645,7 +800,7 @@ function drawScene3(data) {
   // Legend
   const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
 
-  let xOffset = 980;
+  let xOffset = 830;
   let yOffset = 65;
   shape.domain().forEach((level, i) => {
     const legendItem = legend.append("g")
@@ -679,24 +834,43 @@ function drawScene3(data) {
   });
 
   // Annotations
+    g.append("line")
+    .attr("x1", x(30000))
+    .attr("y1", y(500000))
+    .attr("x2", x(43000))
+    .attr("y2", y(430000))
+    .attr("stroke", "darkred")
+    .attr("stroke-width", 1)
+    .style("stroke-dasharray", ("5, 5"));
+  
   const annotations = [ {
-    note: { label: "High employment & income" },
-    x: x(123000),
-    y: y(8000000),
+    note: { label: "Decreasing employment trend" },
+    x: x(42000),
+    y: y(434000),
     dx: 25,
-    dy: -25
+    dy: 25,
+    color: "#760c0cff",
+    className: "my-annotation"
   } ];
 
   const makeAnnotations = d3.annotation().annotations(annotations);
   g.append("g").call(makeAnnotations);
+
+  g.selectAll(".my-annotation")
+    .style("font-weight", "bold");
 }
 
 function drawScene4(data) {
   d3.select("#filters").style("display", "none"); // avoid show filters
-
+  const contentDiv = d3.select('#content');
+  // Clear previous content
+  contentDiv.html('');
+  contentDiv.append("p").text("There are some professions where obtaining a position does not necessarily mean high pay.").style("margin-bottom", "20px");
+  contentDiv.append("p").text("For example, in the legal field, which generally offers high salaries but has limited overall job availability, there is a significant disparity between the earnings of the highest-paid lawyers and those of the majority in the profession.").style("margin-bottom", "20px");
+  contentDiv.append("p").text("Additionally, low- and medium-income professionals were the most affected during the pandemic in 2021.").style("margin-bottom", "20px");
   const svg = d3.select("#vis");
   svg.attr("height", 600);
-  const margin = {top: 60, right: 200, bottom: 60, left: 80};
+  const margin = {top: 60, right: 120, bottom: 60, left: 80};
   const width = +svg.attr("width") - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
   const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
@@ -810,18 +984,42 @@ function drawScene4(data) {
   // Title
   svg.append("text")
     .attr("x", svg.attr("width") / 2)
-    .attr("y", 40)
+    .attr("y", 30)
     .attr("text-anchor", "middle")
     .style("font-size", "25px")
     .style("font-weight", "bold")
     .text(`Income Over Time — ${occupation}`);
+
+    // Annotations
+  const annotations = [ {
+    note: { label: "5x the low earners" },
+    x: x(new Date(2024, 0)),
+    y: y(262000),
+    dx: 25,
+    dy: -25,
+    color: "#760c0cff",
+    className: "my-annotation"
+  } ];
+
+  const makeAnnotations = d3.annotation().annotations(annotations);
+  g.append("g").call(makeAnnotations);
+
+  g.selectAll(".my-annotation")
+    .style("font-weight", "bold");
 }
 
 function drawScene5(data) {
+  const contentDiv = d3.select('#content');
+  contentDiv.html('');
+  contentDiv.append("p").text("Reflection Invitation: Assessing Your Position and Planning Your Next Steps").style("margin-bottom", "20px");
+  contentDiv.append("p").text("Take a moment to consider your current situation and where you stand.").style("margin-bottom", "20px");
+  contentDiv.append("p").text("Reflect on your current occupation, your income, and your employment status.").style("margin-bottom", "20px");
+  contentDiv.append("p").text("Are you satisfied with your current position?").style("margin-bottom", "20px");
+
   const svg = d3.select("#vis");
   svg.attr("height", 1000);
 
-  const margin = {top: 60, right: 200, bottom: 60, left: 80};
+  const margin = {top: 60, right: 120, bottom: 60, left: 80};
   const width = +svg.attr("width") - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
   const plotHeight1 =  5*((height / 9));
@@ -989,7 +1187,7 @@ function drawScene5(data) {
     // Legend
     const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
 
-    let xOffset = 980;
+    let xOffset = 830;
     let yOffset = 65;
     shape.domain().forEach((level, i) => {
       const legendItem = legend.append("g")
